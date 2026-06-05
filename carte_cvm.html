@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVM dans l’eau potable</title>
+
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+
+    <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 15px;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* Zone éditoriale (Haut et centré) */
+        .header-container {
+            max-width: 800px;
+            margin: 0 auto 10px auto;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000; /* Titre en noir */
+            line-height: 1.3;
+            margin: 0 0 12px 0;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #333333;
+            line-height: 1.4;
+            margin: 0 0 15px 0;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #e0e0e0;
+            margin-bottom: 15px;
+        }
+
+        /* Légende Horizontale par Blocs (Binned) */
+        .legend-wrapper {
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+            width: 100%;
+        }
+        .legend-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #222;
+            margin-bottom: 8px;
+        }
+
+        /* Grille de la légende pour aligner les blocs et les chiffres */
+        .legend-binned {
+            display: flex;
+            align-items: flex-start;
+        }
+        .legend-bin {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 45px; /* Largeur de chaque bloc */
+        }
+        .bin-color {
+            width: 100%;
+            height: 14px;
+            border-top: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-left: 1px solid #ccc;
+        }
+        /* Fermeture de la bordure pour le tout dernier bloc */
+        .legend-bin:last-child .bin-color {
+            border-right: 1px solid #ccc;
+        }
+        .bin-label {
+            font-size: 11px;
+            color: #444;
+            margin-top: 4px;
+            white-space: nowrap;
+        }
+
+        /* Zone de la carte et de la recherche superposée */
+        .map-container-wrapper {
+            flex-grow: 1;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            min-height: 550px;
+            border: 1px solid #e0e0e0;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Barre de recherche superposée au-dessus de la carte (Haut-Gauche) */
+        .search-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+            background: white;
+            padding: 4px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        #search-input {
+            width: 220px;
+            padding: 6px 8px 6px 26px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            box-sizing: border-box;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 8px center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <h1>CVM dans l’eau potable : votre commune est-elle contaminée ?</h1>
+    <p class="subtitle">
+        Une commune apparaît en couleur sur la carte dès lors qu'une mesure de chlorure de vinyle monomère (CVM) dépasse ou atteint le seuil réglementaire de 0,5 microgramme par litre (μg/L) dans les données du réseau de distribution qui l'approvisionne. Ce qui n'implique pas que toutes les communes d'un même réseau sont forcément contaminées.
+    </p>
+    <hr>
+</div>
+
+<div class="legend-wrapper">
+    <div class="legend-title">Teneur en CVM, en microgramme/L</div>
+    <div class="legend-binned">
+        <div class="legend-bin"><div class="bin-color" style="background: #ffffff;"></div><span class="bin-label">&lt;0,5</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffffe0;"></div><span class="bin-label">0,6</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffebaf;"></div><span class="bin-label">1,5</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffd27f;"></div><span class="bin-label">3</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffaa54;"></div><span class="bin-label">4</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ff7833;"></div><span class="bin-label">5</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ff3b1b;"></div><span class="bin-label">6</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ef002b;"></div><span class="bin-label">7</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #cd004d;"></div><span class="bin-label">8</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #a30066;"></div><span class="bin-label">9</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #730075;"></div><span class="bin-label">10</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #3f006f;"></div><span class="bin-label">&gt;10</span></div>
+    </div>
+</div>
+
+<div class="map-container-wrapper">
+    <div class="search-overlay">
+        <input type="text" id="search-input" placeholder="Chercher...">
+    </div>
+
+    <div id="map"></div>
+</div>
+
+<script>
+    let protocol = new pmtiles.Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+
+    // 1. Chemin vers ton nouveau fichier local
+    const PMTILES_URL = "http://martiblc.github.io/tiles_cvm/communes_propres.pmtiles";
+
+const map = new maplibregl.Map({
+    container: 'map',
+    // style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', // Supprime cette ligne
+    style: {
+        "version": 8,
+        "sources": {},
+        "layers": []
+    }, // Remplace par un style vide
+    center: [2.2137, 46.2276], 
+    zoom: 5.1
+});
+
+    map.on('load', () => {
+        map.addSource('communes-source', {
+            type: 'vector',
+            url: `pmtiles://${PMTILES_URL}`
+        });
+
+        // 2. Symbologie basée sur valmax_2526
+        map.addLayer({
+            'id': 'communes-layer',
+            'type': 'fill',
+            'source': 'communes-source',
+            'source-layer': 'communes', // Vérifie que ce nom est bien celui de ta couche interne
+                'paint': {
+                    'fill-color': [
+                        'case',
+                        // Condition : si la valeur est nulle (null)
+                        ['==', ['get', 'val_max2526'], null], '#d3d3d3',
+                        
+                        // Sinon, on applique l'échelle de couleurs
+                        ['step',
+                            ['to-number', ['coalesce', ['get', 'val_max2526'], 0]], 
+                            '#d0f0c0', // Vert pâle pour < 0,5
+                            0.5, '#ffffe0', 
+                            0.6, '#ffebaf', 
+                            1.5, '#ffd27f', 
+                            3.0, '#ffaa54', 
+                            4.0, '#ff7833', 
+                            5.0, '#ff3b1b', 
+                            6.0, '#ef002b', 
+                            7.0, '#cd004d', 
+                            8.0, '#a30066', 
+                            9.0, '#730075', 
+                            10.0, '#3f006f' 
+                        ]
+                    ],
+                    'fill-opacity': 0.85,
+                    'fill-outline-color': 'rgba(0,0,0,0.05)'
+                }
+                
+        });
+
+        map.addLayer({
+    'id': 'communes-highlight',
+    'type': 'line',
+    'source': 'communes-source',
+    'source-layer': 'communes', // Doit être identique au source-layer de ta couche fill
+    'paint': { 
+        'line-color': '#000000', // Couleur du contour
+        'line-width': 2          // Épaisseur du trait
+    },
+    'filter': ['==', ['get', 'code_insee'], ''] // Filtre vide par défaut (invisible)
+});
+
+        // 3. Popup dynamique avec ta nouvelle valeur
+        const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+
+// Gestion souris ultra-fluide avec nombres et dates formatés
+  map.on('mousemove', (e) => {
+    // 1. Recherche des communes sous le curseur
+    const features = map.queryRenderedFeatures(e.point, { layers: ['communes-layer'] });
+    
+    if (features.length > 0) {
+        const props = features[0].properties;
+        map.getCanvas().style.cursor = 'pointer';
+
+        // Fonctions de formatage
+        const formatNum = (val) => (val != null) ? val.toString().replace('.', ',') : "N/A";
+        const formatDate = (d) => (d && d.length === 10) ? d.split('-').reverse().join('/') : "N/A";
+
+        // 2. Si on est toujours sur la même commune, on déplace juste le popup
+        if (popup.isOpen() && popup.getElement().dataset.insee === props.code_insee) {
+            popup.setLngLat(e.lngLat);
+            return;
+        }
+
+        // 3. Sinon, on reconstruit le contenu et on met à jour le filtre de surbrillance
+        const html = `
+            <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
+                <strong>${props.libelle} (${props.dep})</strong><br>
+                • Quantité max mesurée le ${formatDate(props.date_max)} : <strong>${formatNum(props.val_max)} μg/L</strong> 
+                <br>
+                • Mesure max depuis 2025 : <strong>${formatNum(props.val_max2526)} μg/L</strong> le ${formatDate(props.date_max2526)}
+            </div>
+        `;
+        
+        popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+        popup.getElement().dataset.insee = props.code_insee;
+        
+        // Active le contour noir sur la commune survolée
+        map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], props.code_insee]);
+        
+    } else {
+        // 4. Si on sort de France ou des polygones, on nettoie
+        if (popup.isOpen()) {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+            // Désactive le contour noir
+            map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '']);
+        }
+    }
+});
+
+// 5. Nettoyage final si la souris quitte la zone de la carte
+map.on('mouseout', () => {
+    popup.remove();
+    map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '']);
+});
+        // ... (le reste de ton code pour le mouseleave et le search)
+    });
+    
+</script>
+
+</body>
+</html>
