@@ -7,229 +7,198 @@
 
 <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
-    <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
+<style>
+    body {
+        margin: 0;
+        padding: 15px;
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
 
-    <style>
-        body {
-            margin: 0;
-            padding: 15px;
-            font-family: Arial, Helvetica, sans-serif;
-            background-color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
+    /* Zone éditoriale */
+    .header-container {
+        max-width: 800px;
+        margin: 0 auto 10px auto;
+        width: 100%;
+    }
 
-        /* Zone éditoriale (Haut et centré) */
-        .header-container {
-            max-width: 800px;
-            margin: 0 auto 10px auto;
-            width: 100%;
-        }
+    h1 {
+        font-size: 24px;
+        font-weight: bold;
+        color: #000000;
+        line-height: 1.3;
+        margin: 0 0 12px 0;
+    }
 
-        h1 {
-            font-size: 24px;
-            font-weight: bold;
-            color: #000000; /* Titre en noir */
-            line-height: 1.3;
-            margin: 0 0 12px 0;
-        }
+    .subtitle {
+        font-size: 14px;
+        color: #333333;
+        line-height: 1.4;
+        margin: 0 0 15px 0;
+    }
 
-        .subtitle {
-            font-size: 14px;
-            color: #333333;
-            line-height: 1.4;
-            margin: 0 0 15px 0;
-        }
+    hr {
+        border: 0;
+        border-top: 1px solid #e0e0e0;
+        margin-bottom: 15px;
+    }
 
-        hr {
-            border: 0;
-            border-top: 1px solid #e0e0e0;
-            margin-bottom: 15px;
-        }
-
-        /* Légende Horizontale par Blocs (Binned) */
-        .legend-wrapper {
-            max-width: 800px;
-            margin: 0 auto 20px auto;
-            width: 100%;
-        }
-        .legend-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: #222;
-            margin-bottom: 8px;
-        }
-
-        /* Grille de la légende pour aligner les blocs et les chiffres */
-        .legend-binned {
-            display: flex;
-            align-items: flex-start;
-        }
-        .legend-bin {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 45px; /* Largeur de chaque bloc */
-        }
-        .bin-color {
-            width: 100%;
-            height: 14px;
-            border-top: 1px solid #ccc;
-            border-bottom: 1px solid #ccc;
-            border-left: 1px solid #ccc;
-        }
-        /* Fermeture de la bordure pour le tout dernier bloc */
-        .legend-bin:last-child .bin-color {
-            border-right: 1px solid #ccc;
-        }
-        .bin-label {
-            font-size: 11px;
-            color: #444;
-            margin-top: 4px;
-            white-space: nowrap;
-        }
-
-        /* Zone de la carte et de la recherche superposée */
-        .map-container-wrapper {
-            flex-grow: 1;
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            min-height: 600px;
-            border: 1px solid #e0e0e0;
-        }
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-        }
-
-        /* Barre de recherche superposée au-dessus de la carte (Haut-Gauche) */
-        .search-overlay {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 10;
-            background: white;
-            padding: 4px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-/* APRÈS */
-.toggle-overlay {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    z-index: 10;
-    background: white;
-    padding: 10px;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    display: flex;
-    flex-direction: column;
-}
-
-
-.radio-btn {
-    display: inline-flex;
-    justify-content: center;
-    text-align: center;
-    padding: 5px 10px;
-    margin-top: 5px;
-    cursor: pointer;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 13px;
-    transition: background 0.2s;
-}
-
-/* Style de l'option active (légèrement grisé) */
-.radio-btn.active {
-    background-color: #f0f0f0;
-    border-color: #ccc;
-    font-weight: bold;
-}
-
-.radio-btn input {
-    display: none; /* Cache le petit cercle radio par défaut */
-}
-        #search-input {
-            width: 220px;
-            padding: 6px 8px 6px 26px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 13px;
-            box-sizing: border-box;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 8px center;
-        }
-
-        /* Bloc de notes sous la carte */
-        .map-notes {
-            max-width: 800px;
-            margin: 20px auto 0 auto;
-            width: 100%;
-            font-size: 12px;
-            color: #666666; /* Couleur grise */
-            line-height: 1.5;
-            border-top: 1px solid #e0e0e0;
-            padding-top: 5px;
-        }
-
-@media (max-width: 480px) {
-    .toggle-overlay {
-        top: auto;
-        bottom: 10px;
-        right: 50%;
-        transform: translateX(50%);
+    /* Légende */
+    .legend-wrapper {
+        max-width: 800px;
+        margin: 0 auto 20px auto;
+        width: 100%;
+    }
+    .legend-title {
+        font-size: 12px;
+        font-weight: bold;
+        color: #222;
+        margin-bottom: 8px;
+    }
+    .legend-binned {
+        display: flex;
+        align-items: flex-start;
+    }
+    .legend-bin {
+        display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
-        padding: 10px 20px;
-        min-width: 220px;
+        width: 45px;
     }
-    .toggle-overlay .legend-title {
-        margin-bottom: 2px;
-    }
-    .toggle-overlay .buttons-row {
-        display: flex;
-        flex-direction: row;
-        gap: 8px;
+    .bin-color {
         width: 100%;
-        justify-content: center;
+        height: 14px;
+        border: 1px solid #ccc;
+        border-right: none;
     }
+    .legend-bin:last-child .bin-color {
+        border-right: 1px solid #ccc;
+    }
+    .bin-label {
+        font-size: 11px;
+        color: #444;
+        margin-top: 4px;
+        white-space: nowrap;
+    }
+
+    /* Carte et conteneurs */
+    .map-container-wrapper {
+        flex-grow: 1;
+        position: relative;
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+        min-height: 600px;
+        border: 1px solid #e0e0e0;
+    }
+    #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+    }
+
+    /* Barre de recherche (Tom Select) */
     .search-overlay {
-        top: 10px;
-        left: 10px;
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        z-index: 10;
+        width: 250px;
     }
-    #search-input {
-        width: 160px;
+    .ts-control {
+        padding: 2px 8px !important;
+        min-height: 30px !important;
+        font-size: 13px !important;
+        border: 1px solid #ccc !important;
+        border-radius: 6px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    /* Toggle Overlay */
+    .toggle-overlay {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
     }
     .radio-btn {
-        margin-top: 0;
-        flex: 1;
-        display: flex;
+        display: inline-flex;
         justify-content: center;
+        text-align: center;
+        padding: 5px 10px;
+        margin-top: 5px;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        transition: background 0.2s;
     }
-    .map-container-wrapper {
-        min-height: 400px; /* Moins haut sur mobile pour garder la carte visible */
-        width: 100%;
-        margin: 0;
+    .radio-btn.active {
+        background-color: #f0f0f0;
+        border-color: #ccc;
+        font-weight: bold;
+    }
+    .radio-btn input {
+        display: none;
+    }
 
-}
-}
-    </style>
+    /* Bloc de notes */
+    .map-notes {
+        max-width: 800px;
+        margin: 20px auto 0 auto;
+        width: 100%;
+        font-size: 12px;
+        color: #666666;
+        line-height: 1.5;
+        border-top: 1px solid #e0e0e0;
+        padding-top: 5px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+        .search-overlay {
+            width: 90%;
+            left: 5%;
+        }
+        .toggle-overlay {
+            top: auto;
+            bottom: 10px;
+            right: 50%;
+            transform: translateX(50%);
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            min-width: 220px;
+        }
+        .map-container-wrapper {
+            min-height: 400px;
+            margin: 0;
+        }
+    }
+</style>
 </head>
 <body>
 
 <div class="header-container">
     <h1>CVM dans l’eau potable : les résultats dans votre commune</h1>
     <p class="subtitle">
-        Les communes apparaissent en couleur dès lors qu'une mesure de chlorure de vinyle monomère (CVM) a été réalisée sur leur(s) réseau(x) de distribution d'eau potable.
+        Les communes apparaissent en couleur dès lors qu'une mesure de chlorure de vinyle monomère (CVM) a été réalisée sur leur(s) réseau(x) de distribution d'eau potable. 
         Elles apparaissent en jaune clair quand le résultat maximum se trouve en dessous du seuil réglementaire de 0,5 microgramme par litre (μg/L), et en vert, quand ce taux est égal à zéro. Le reste affiche une mesure au-dessus de la limite.
         <br> Les mesures sont réalisées à l'échelle du réseau de distribution et peuvent ne concerner qu'une partie de la commune.
     </p>
@@ -257,31 +226,29 @@
 
 <div class="map-container-wrapper">
     <div class="search-overlay">
-    <input type="text" id="search-input" list="communes-list" placeholder="Chercher une commune...">
-    <datalist id="communes-list">
-        </datalist>
-</div>
-
-<div class="toggle-overlay">
-    <div class="legend-title">Prélèvement maximum</div>
-    <div class="buttons-row">
-        <label class="radio-btn active">
-            <input type="radio" name="dataMode" value="val_max2526" checked> Depuis 2025
-        </label>
-        <label class="radio-btn">
-            <input type="radio" name="dataMode" value="val_max"> Historique
-        </label>
+        <input type="text" id="search-input" placeholder="Chercher une commune...">
     </div>
-</div>
+
+    <div class="toggle-overlay">
+        <div class="legend-title">Prélèvement maximum</div>
+        <div class="buttons-row">
+            <label class="radio-btn active">
+                <input type="radio" name="dataMode" value="val_max2526" checked> Depuis 2025
+            </label>
+            <label class="radio-btn">
+                <input type="radio" name="dataMode" value="val_max"> Historique
+            </label>
+        </div>
+    </div>
 
     <div id="map"></div>
 </div>
 
 <div class="map-notes">
-    <p>Les données présentées sont à prendre avec des pincettes.
+    <p>Les données présentées sont à prendre avec des pincettes. 
         Lors de la dernière mouture de cette carte, en 2025, les demandes d’accès aux documents administratifs ont montré que les mesures de CVM n’étaient pas systématiquement
-        mises à disposition du public par les ARS et le ministère de la Santé.
-        Les données actuelles pourraient donc sous-estimer l’ampleur de la contamination au CVM.
+        mises à disposition du public par les ARS et le ministère de la Santé. 
+        Les données actuelles pourraient donc sous-estimer l’ampleur de la contamination au CVM. 
         <br>Sources : Ministère des Solidarités et de la Santé, ARS, Gaspard Lemaire </p>
 </div>
 
@@ -299,12 +266,12 @@ const map = new maplibregl.Map({
     container: 'map',
     style: { "version": 8, "sources": {}, "layers": [] },
     // On centre un peu plus à l'Ouest (1.8 au lieu de 2.2) pour compenser le décalage visuel
-    center: isMobile ? [2.2137, 46.5] : [1.8, 46.5],
+    center: isMobile ? [2.2137, 46.5] : [1.8, 46.5], 
     zoom: isMobile ? 3.8 : 4.8, // 3.8 pour mobile, 4.8 pour desktop
     minZoom: isMobile ? 3.8 : 4.5,
     maxZoom: 10,
     // On restreint les bornes pour éviter que la carte ne s'échappe
-    maxBounds: [[-8.0, 40.0], [12.0, 52.0]]
+    maxBounds: [[-8.0, 40.0], [12.0, 52.0]] 
 });
 
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
@@ -331,9 +298,9 @@ document.querySelectorAll('input[name="dataMode"]').forEach((radio) => {
             ['in', ['to-string', ['get', currentField]], ['literal', ['', 'null', 'NA', 'N/A']]], '#e0e0e0',
             ['==', ['to-number', ['coalesce', ['get', currentField], 0]], 0], '#d0f0c0',
             ['step',
-                ['to-number', ['coalesce', ['get', currentField], 0]],
-                '#ffffe0', 0.5, '#ffebaf', 1.0, '#ffd27f', 1.5, '#ffaa54',
-                2.0, '#ff7833', 3.0, '#ff3b1b', 4.0, '#ef002b', 5.0, '#cd004d',
+                ['to-number', ['coalesce', ['get', currentField], 0]], 
+                '#ffffe0', 0.5, '#ffebaf', 1.0, '#ffd27f', 1.5, '#ffaa54', 
+                2.0, '#ff7833', 3.0, '#ff3b1b', 4.0, '#ef002b', 5.0, '#cd004d', 
                 6.0, '#a30066', 7.0, '#730075', 8.0, '#3f006f'
             ]
         ]);
@@ -354,27 +321,27 @@ document.querySelectorAll('input[name="dataMode"]').forEach((radio) => {
 
         // Gestion spécifique du 0 en #ffffe0
         ['==', ['to-number', ['coalesce', ['get', 'val_max2526'], 0]], 0], '#d0f0c0',
-
+        
         // Sinon, on applique l'échelle de couleurs
         ['step',
-            ['to-number', ['coalesce', ['get', 'val_max2526'], 0]],
+            ['to-number', ['coalesce', ['get', 'val_max2526'], 0]], 
             '#ffffe0', // Pour les valeurs très proches de 0 mais > 0
             0.5, '#ffebaf', // On commence le dégradé à partir de 0.5
-            1.0, '#ffd27f',
-            1.5, '#ffaa54',
-            2.0, '#ff7833',
-            3.0, '#ff3b1b',
-            4.0, '#ef002b',
-            5.0, '#cd004d',
-            6.0, '#a30066',
-            7.0, '#730075',
+            1.0, '#ffd27f', 
+            1.5, '#ffaa54', 
+            2.0, '#ff7833', 
+            3.0, '#ff3b1b', 
+            4.0, '#ef002b', 
+            5.0, '#cd004d', 
+            6.0, '#a30066', 
+            7.0, '#730075', 
             8.0, '#3f006f'
         ]
     ],
     'fill-opacity': 0.85,
     'fill-outline-color': 'rgba(0,0,0,0.05)'
 }
-
+                
         });
 
                 // Highlight
@@ -384,12 +351,12 @@ document.querySelectorAll('input[name="dataMode"]').forEach((radio) => {
     'type': 'line',
     'source': 'communes-source',
     'source-layer': 'communes',
-    'paint': {
+    'paint': { 
         'line-color': '#004352',
         'line-width': 3 // Un peu plus épais pour une meilleure visibilité
     },
     'minzoom': 8,
-    'filter': ['==', ['get', 'codgeo'], '']
+    'filter': ['==', ['get', 'codgeo'], ''] 
 });
 
         // 3. Popup dynamique avec ta nouvelle valeur
@@ -399,16 +366,16 @@ document.querySelectorAll('input[name="dataMode"]').forEach((radio) => {
 // Gestion souris ultra-fluide avec nombres et dates formatés
 // Gestion souris ultra-fluide avec nombres et dates formatés
 map.on('mousemove', (e) => {
-    if (isLocked) return;
+    if (isLocked) return; 
 
     // On cherche parmi les entités survolées celle qui possède un libellé valide
     const allFeatures = map.queryRenderedFeatures(e.point, { layers: ['communes-layer'] });
-    const validFeature = allFeatures.find(f =>
-        f.properties.libelle &&
-        f.properties.libelle !== "undefined" &&
+    const validFeature = allFeatures.find(f => 
+        f.properties.libelle && 
+        f.properties.libelle !== "undefined" && 
         f.properties.libelle.trim() !== ""
     );
-
+    
     if (validFeature) {
         const props = validFeature.properties;
         map.getCanvas().style.cursor = 'pointer';
@@ -426,10 +393,10 @@ map.on('mousemove', (e) => {
             const html = `
                 <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
                     <strong>${props.libelle} (${props.dep})</strong><br>
-                    • Maximum historique : <strong>${formatNum(props.val_max)} μg/L</strong> le ${formatDate(props.date_max)}
+                    • Maximum historique : <strong>${formatNum(props.val_max)} μg/L</strong> le ${formatDate(props.date_max)}  
                     <br>
-                    ${hasData2526
-                        ? `• Maximum depuis 2025 : <strong>${formatNum(props.val_max2526)} μg/L</strong> le ${formatDate(props.date_max2526)}`
+                    ${hasData2526 
+                        ? `• Maximum depuis 2025 : <strong>${formatNum(props.val_max2526)} μg/L</strong> le ${formatDate(props.date_max2526)}` 
                         : `• <em>Aucune donnée depuis 2025</em>`
                     }
                 </div>
@@ -444,7 +411,7 @@ map.on('mousemove', (e) => {
         } else {
             map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
         }
-
+        
     } else {
         // Nettoyage si on survole une zone vide
         if (popup.isOpen()) {
@@ -465,40 +432,46 @@ map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '___aucun___']);
     });
 
 // --- LOGIQUE DE RECHERCHE ---
+let tsInstance;
 
-// 1. Remplir la liste au chargement des données
 map.on('sourcedata', (e) => {
-    if (e.sourceId === 'communes-source' && e.isSourceLoaded && document.getElementById('communes-list').options.length === 0) {
+    if (e.sourceId === 'communes-source' && e.isSourceLoaded) {
+        if (tsInstance) return;
+
         const features = map.querySourceFeatures('communes-source', { sourceLayer: 'communes' });
-        const datalist = document.getElementById('communes-list');
+        
+        // On crée les options pour TomSelect
+        const options = features.map(f => ({
+            value: f.properties.libelle + " (" + f.properties.dep + ")",
+            text: f.properties.libelle + " (" + f.properties.dep + ")"
+        }));
 
-        // On extrait les noms uniques
-const noms = [...new Set(features
-    .map(f => f.properties.libelle)
-    .filter(nom => nom && nom !== "undefined" && nom.trim() !== "") // <-- FILTRE ICI
-)].sort();
-
-/* APRÈS */
-const communeMap = {};
-features.forEach(f => {
-    const nom = f.properties.libelle;
-    const dep = f.properties.dep;
-    if (nom && nom !== "undefined" && nom.trim() !== "") {
-        communeMap[nom] = dep;
-    }
-});
-Object.keys(communeMap).sort().forEach(nom => {
-    let option = document.createElement('option');
-    option.value = `${nom} (${communeMap[nom]})`;
-    datalist.appendChild(option);
-});
+        tsInstance = new TomSelect("#search-input", {
+            options: options,
+            maxItems: 1,
+            placeholder: "Chercher une commune...",
+            onChange: function(value) {
+                if (!value) return;
+                
+                // On extrait le nom pour retrouver la feature
+                const nom = value.replace(/\s*\(.*?\)\s*$/, '').trim();
+                const commune = features.find(f => f.properties.libelle === nom);
+                
+                if (commune) {
+                    triggerPopup(commune);
+                }
+                
+                // Effacer le champ après sélection si besoin
+                this.clear();
+            }
+        });
     }
 });
 
 // --- RECHERCHE : action au clic sur une commune de la liste ---
 
 const triggerPopup = (commune) => {
-    isLocked = true;
+    isLocked = true; 
     const props = commune.properties;
     const coords = commune.geometry.coordinates[0];
     const lngLat = coords.reduce(
@@ -506,7 +479,7 @@ const triggerPopup = (commune) => {
         [0, 0]
     );
     map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], props.codgeo]);
-
+    
     const formatNum = (val) => (val != null) ? val.toString().replace('.', ',') : "N/A";
     const formatDate = (d) => (d && d.length === 10) ? d.split('-').reverse().join('/') : "N/A";
     /* APRÈS */
@@ -543,19 +516,7 @@ map.on('click', () => {
 });
 
 
-document.getElementById('search-input').addEventListener('input', (e) => {
-    const nomRecherche = e.target.value.replace(/\s*\(.*?\)\s*$/, '').trim();
-    if (e.target.value.length < 3) return;
-
-    document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
-    map.flyTo({ center: [2.2137, 46.2276], zoom: isMobile ? 3.8 : 4.0  });
-    map.once('moveend', () => {
-        const features = map.querySourceFeatures('communes-source', { sourceLayer: 'communes' });
-        const commune = features.find(f => f.properties.libelle === nomRecherche);
-        if (commune) triggerPopup(commune);
-    });
-});
-
+    
 </script>
 
 </body>
