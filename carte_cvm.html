@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CVM dans l’eau potable</title>
 
-    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+<link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
 
     <script src="https://unpkg.com/pmtiles@2.11.0/dist/index.js"></script>
 
@@ -99,7 +99,7 @@
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            min-height: 550px;
+            min-height: 600px;
             border: 1px solid #e0e0e0;
         }
         #map {
@@ -120,6 +120,44 @@
             border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
+/* APRÈS */
+.toggle-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10;
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+}
+
+
+.radio-btn {
+    display: inline-flex;
+    justify-content: center;
+    text-align: center;
+    padding: 5px 10px;
+    margin-top: 5px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+/* Style de l'option active (légèrement grisé) */
+.radio-btn.active {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+    font-weight: bold;
+}
+
+.radio-btn input {
+    display: none; /* Cache le petit cercle radio par défaut */
+}
         #search-input {
             width: 220px;
             padding: 6px 8px 6px 26px;
@@ -129,14 +167,65 @@
             box-sizing: border-box;
             background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>') no-repeat 8px center;
         }
+
+        /* Bloc de notes sous la carte */
+        .map-notes {
+            max-width: 800px;
+            margin: 20px auto 0 auto;
+            width: 100%;
+            font-size: 12px;
+            color: #666666; /* Couleur grise */
+            line-height: 1.5;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 5px;
+        }
+
+@media (max-width: 480px) {
+    .toggle-overlay {
+        top: auto;
+        bottom: 10px;
+        right: 50%;
+        transform: translateX(50%);
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 20px;
+        min-width: 220px;
+    }
+    .toggle-overlay .legend-title {
+        margin-bottom: 2px;
+    }
+    .toggle-overlay .buttons-row {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+        justify-content: center;
+    }
+    .search-overlay {
+        top: 10px;
+        left: 10px;
+    }
+    #search-input {
+        width: 160px;
+    }
+    .radio-btn {
+        margin-top: 0;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+}
     </style>
 </head>
 <body>
 
 <div class="header-container">
-    <h1>CVM dans l’eau potable : votre commune est-elle contaminée ?</h1>
+    <h1>CVM dans l’eau potable : les résultats dans votre commune</h1>
     <p class="subtitle">
-        Une commune apparaît en couleur sur la carte dès lors qu'une mesure de chlorure de vinyle monomère (CVM) dépasse ou atteint le seuil réglementaire de 0,5 microgramme par litre (μg/L) dans les données du réseau de distribution qui l'approvisionne. Ce qui n'implique pas que toutes les communes d'un même réseau sont forcément contaminées.
+        Les communes apparaissent en couleur dès lors qu'une mesure de chlorure de vinyle monomère (CVM) a été réalisée sur leur(s) réseau(x) de distribution d'eau potable. 
+        Elles apparaissent en jaune clair quand le résultat maximum se trouve en dessous du seuil réglementaire de 0,5 microgramme par litre (μg/L), et en vert, quand ce taux est égal à zéro. Le reste affiche une mesure au-dessus de la limite.
+        <br> Les mesures sont réalisées à l'échelle du réseau de distribution et peuvent ne concerner qu'une partie de la commune.
     </p>
     <hr>
 </div>
@@ -144,53 +233,104 @@
 <div class="legend-wrapper">
     <div class="legend-title">Teneur en CVM, en microgramme/L</div>
     <div class="legend-binned">
-        <div class="legend-bin"><div class="bin-color" style="background: #ffffff;"></div><span class="bin-label">&lt;0,5</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ffffe0;"></div><span class="bin-label">0,6</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ffebaf;"></div><span class="bin-label">1,5</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ffd27f;"></div><span class="bin-label">3</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ffaa54;"></div><span class="bin-label">4</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ff7833;"></div><span class="bin-label">5</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ff3b1b;"></div><span class="bin-label">6</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #ef002b;"></div><span class="bin-label">7</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #cd004d;"></div><span class="bin-label">8</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #a30066;"></div><span class="bin-label">9</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #730075;"></div><span class="bin-label">10</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #3f006f;"></div><span class="bin-label">&gt;10</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #d0f0c0;"></div><span class="bin-label">0</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffffe0;"></div><span class="bin-label">>0</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffebaf;"></div><span class="bin-label">>0,5</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffd27f;"></div><span class="bin-label">>1</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ffaa54;"></div><span class="bin-label">>1,5</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ff7833;"></div><span class="bin-label">>2</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ff3b1b;"></div><span class="bin-label">>3</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #ef002b;"></div><span class="bin-label">>4</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #cd004d;"></div><span class="bin-label">>5</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #a30066;"></div><span class="bin-label">>6</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #730075;"></div><span class="bin-label">>7</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #3f006f;"></div><span class="bin-label">>8</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #e0e0e0;"></div><span class="bin-label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sans données</span></div>
     </div>
 </div>
 
 <div class="map-container-wrapper">
     <div class="search-overlay">
-        <input type="text" id="search-input" placeholder="Chercher...">
+    <input type="text" id="search-input" list="communes-list" placeholder="Chercher une commune...">
+    <datalist id="communes-list">
+        </datalist>
+</div>
+
+<div class="toggle-overlay">
+    <div class="legend-title">Prélèvement maximum</div>
+    <div class="buttons-row">
+        <label class="radio-btn active">
+            <input type="radio" name="dataMode" value="val_max2526" checked> Depuis 2025
+        </label>
+        <label class="radio-btn">
+            <input type="radio" name="dataMode" value="val_max"> Historique
+        </label>
     </div>
+</div>
 
     <div id="map"></div>
 </div>
 
+<div class="map-notes">
+    <p>Les données présentées sont à prendre avec des pincettes. 
+        Lors de la dernière mouture de cette carte, en 2025, les demandes d’accès aux documents administratifs ont montré que les mesures de CVM n’étaient pas systématiquement
+        mises à disposition du public par les ARS et le ministère de la Santé. 
+        Les données actuelles pourraient donc sous-estimer l’ampleur de la contamination au CVM. 
+        <br>Sources : Ministère des Solidarités et de la Santé, ARS, Gaspard Lemaire </p>
+</div>
+
 <script>
+    let isLocked = false;
     let protocol = new pmtiles.Protocol();
     maplibregl.addProtocol("pmtiles", protocol.tile);
 
     // 1. Chemin vers ton nouveau fichier local
     const PMTILES_URL = "https://martiblc.github.io/tiles_cvm/communes_propres.pmtiles";
 
+/* APRÈS */
+const isMobile = window.innerWidth <= 480;
 const map = new maplibregl.Map({
     container: 'map',
-    // style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', // Supprime cette ligne
-    style: {
-        "version": 8,
-        "sources": {},
-        "layers": []
-    }, // Remplace par un style vide
+    style: { "version": 8, "sources": {}, "layers": [] },
     center: [2.2137, 46.2276], 
-    zoom: 5.1
+    zoom: isMobile ? 3.8 : 4.7,
+    minZoom: isMobile ? 3.8 : 5,
+    maxZoom: 10,
+    maxBounds: [[-8.0, 39.0], [12.0, 53.0]]
 });
+
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 
     map.on('load', () => {
         map.addSource('communes-source', {
             type: 'vector',
             url: `pmtiles://${PMTILES_URL}`
         });
+
+// Variable globale pour suivre le mode actuel
+let currentField = 'val_max2526';
+
+document.querySelectorAll('input[name="dataMode"]').forEach((radio) => {
+    radio.addEventListener('change', (e) => {
+        e.stopPropagation();
+        currentField = e.target.value;
+
+        document.querySelectorAll('.radio-btn').forEach(label => label.classList.remove('active'));
+        e.target.parentElement.classList.add('active');
+
+        map.setPaintProperty('communes-layer', 'fill-color', [
+            'case',
+            ['in', ['to-string', ['get', currentField]], ['literal', ['', 'null', 'NA', 'N/A']]], '#e0e0e0',
+            ['==', ['to-number', ['coalesce', ['get', currentField], 0]], 0], '#d0f0c0',
+            ['step',
+                ['to-number', ['coalesce', ['get', currentField], 0]], 
+                '#ffffe0', 0.5, '#ffebaf', 1.0, '#ffd27f', 1.5, '#ffaa54', 
+                2.0, '#ff7833', 3.0, '#ff3b1b', 4.0, '#ef002b', 5.0, '#cd004d', 
+                6.0, '#a30066', 7.0, '#730075', 8.0, '#3f006f'
+            ]
+        ]);
+    });
+});
 
         // 2. Symbologie basée sur valmax_2526
         map.addLayer({
@@ -199,102 +339,214 @@ const map = new maplibregl.Map({
             'source': 'communes-source',
             'source-layer': 'communes', // Vérifie que ce nom est bien celui de ta couche interne
                 'paint': {
-                    'fill-color': [
-                        'case',
-                        // Condition : si la valeur est nulle (null)
-                        ['==', ['get', 'val_max2526'], null], '#d3d3d3',
-                        
-                        // Sinon, on applique l'échelle de couleurs
-                        ['step',
-                            ['to-number', ['coalesce', ['get', 'val_max2526'], 0]], 
-                            '#d0f0c0', // Vert pâle pour < 0,5
-                            0.5, '#ffffe0', 
-                            0.6, '#ffebaf', 
-                            1.5, '#ffd27f', 
-                            3.0, '#ffaa54', 
-                            4.0, '#ff7833', 
-                            5.0, '#ff3b1b', 
-                            6.0, '#ef002b', 
-                            7.0, '#cd004d', 
-                            8.0, '#a30066', 
-                            9.0, '#730075', 
-                            10.0, '#3f006f' 
-                        ]
-                    ],
-                    'fill-opacity': 0.85,
-                    'fill-outline-color': 'rgba(0,0,0,0.05)'
-                }
+    'fill-color': [
+        'case',
+        // On teste si c'est null OU si c'est une chaîne "NA" / "N/A"
+        ['in', ['to-string', ['get', 'val_max2526']], ['literal', ['', 'null', 'NA', 'N/A']]], '#e0e0e0', // Couleur pour NA
+
+        // Gestion spécifique du 0 en #ffffe0
+        ['==', ['to-number', ['coalesce', ['get', 'val_max2526'], 0]], 0], '#d0f0c0',
+        
+        // Sinon, on applique l'échelle de couleurs
+        ['step',
+            ['to-number', ['coalesce', ['get', 'val_max2526'], 0]], 
+            '#ffffe0', // Pour les valeurs très proches de 0 mais > 0
+            0.5, '#ffebaf', // On commence le dégradé à partir de 0.5
+            1.0, '#ffd27f', 
+            1.5, '#ffaa54', 
+            2.0, '#ff7833', 
+            3.0, '#ff3b1b', 
+            4.0, '#ef002b', 
+            5.0, '#cd004d', 
+            6.0, '#a30066', 
+            7.0, '#730075', 
+            8.0, '#3f006f'
+        ]
+    ],
+    'fill-opacity': 0.85,
+    'fill-outline-color': 'rgba(0,0,0,0.05)'
+}
                 
         });
 
-        map.addLayer({
+                // Highlight
+
+  map.addLayer({
     'id': 'communes-highlight',
     'type': 'line',
     'source': 'communes-source',
-    'source-layer': 'communes', // Doit être identique au source-layer de ta couche fill
+    'source-layer': 'communes',
     'paint': { 
-        'line-color': '#000000', // Couleur du contour
-        'line-width': 2          // Épaisseur du trait
+        'line-color': '#004352',
+        'line-width': 3 // Un peu plus épais pour une meilleure visibilité
     },
-    'filter': ['==', ['get', 'code_insee'], ''] // Filtre vide par défaut (invisible)
+    'minzoom': 8,
+    'filter': ['==', ['get', 'codgeo'], ''] 
 });
 
         // 3. Popup dynamique avec ta nouvelle valeur
         const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false });
+        const searchPopup = new maplibregl.Popup({ closeButton: true });
 
 // Gestion souris ultra-fluide avec nombres et dates formatés
-  map.on('mousemove', (e) => {
-    // 1. Recherche des communes sous le curseur
-    const features = map.queryRenderedFeatures(e.point, { layers: ['communes-layer'] });
+// Gestion souris ultra-fluide avec nombres et dates formatés
+map.on('mousemove', (e) => {
+    if (isLocked) return; 
+
+    // On cherche parmi les entités survolées celle qui possède un libellé valide
+    const allFeatures = map.queryRenderedFeatures(e.point, { layers: ['communes-layer'] });
+    const validFeature = allFeatures.find(f => 
+        f.properties.libelle && 
+        f.properties.libelle !== "undefined" && 
+        f.properties.libelle.trim() !== ""
+    );
     
-    if (features.length > 0) {
-        const props = features[0].properties;
+    if (validFeature) {
+        const props = validFeature.properties;
         map.getCanvas().style.cursor = 'pointer';
 
-        // Fonctions de formatage
-        const formatNum = (val) => (val != null) ? val.toString().replace('.', ',') : "N/A";
+        // Fonctions utilitaires de formatage
+        const formatNum = (val) => (val != null && val !== "" && val !== "NA") ? val.toString().replace('.', ',') : "N/A";
         const formatDate = (d) => (d && d.length === 10) ? d.split('-').reverse().join('/') : "N/A";
 
-        // 2. Si on est toujours sur la même commune, on déplace juste le popup
-        if (popup.isOpen() && popup.getElement().dataset.insee === props.code_insee) {
+        // Vérification de l'existence des données 2025/2026
+        const hasData2526 = props.val_max2526 != null && props.val_max2526 !== "" && props.val_max2526 !== "NA" && props.val_max2526 !== "null";
+
+        if (popup.isOpen() && popup.getElement().dataset.insee === props.codgeo) {
             popup.setLngLat(e.lngLat);
-            return;
+        } else {
+            const html = `
+                <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
+                    <strong>${props.libelle} (${props.dep})</strong><br>
+                    • Maximum historique : <strong>${formatNum(props.val_max)} μg/L</strong> le ${formatDate(props.date_max)}  
+                    <br>
+                    ${hasData2526 
+                        ? `• Maximum depuis 2025 : <strong>${formatNum(props.val_max2526)} μg/L</strong> le ${formatDate(props.date_max2526)}` 
+                        : `• <em>Aucune donnée depuis 2025</em>`
+                    }
+                </div>
+            `;
+            popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
+            popup.getElement().dataset.insee = props.codgeo;
         }
 
-        // 3. Sinon, on reconstruit le contenu et on met à jour le filtre de surbrillance
-        const html = `
-            <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
-                <strong>${props.libelle} (${props.dep})</strong><br>
-                • Quantité max mesurée le ${formatDate(props.date_max)} : <strong>${formatNum(props.val_max)} μg/L</strong> 
-                <br>
-                • Mesure max depuis 2025 : <strong>${formatNum(props.val_max2526)} μg/L</strong> le ${formatDate(props.date_max2526)}
-            </div>
-        `;
-        
-        popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
-        popup.getElement().dataset.insee = props.code_insee;
-        
-        // Active le contour noir sur la commune survolée
-        map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], props.code_insee]);
+        // Surlignage de la commune
+        if (map.getZoom() >= 8) {
+            map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], props.codgeo]);
+        } else {
+            map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
+        }
         
     } else {
-        // 4. Si on sort de France ou des polygones, on nettoie
+        // Nettoyage si on survole une zone vide
         if (popup.isOpen()) {
             map.getCanvas().style.cursor = '';
             popup.remove();
-            // Désactive le contour noir
-            map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '']);
+            map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
         }
     }
 });
 
+
 // 5. Nettoyage final si la souris quitte la zone de la carte
 map.on('mouseout', () => {
     popup.remove();
-    map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '']);
+map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '___aucun___']);
 });
         // ... (le reste de ton code pour le mouseleave et le search)
     });
+
+// --- LOGIQUE DE RECHERCHE ---
+
+// 1. Remplir la liste au chargement des données
+map.on('sourcedata', (e) => {
+    if (e.sourceId === 'communes-source' && e.isSourceLoaded && document.getElementById('communes-list').options.length === 0) {
+        const features = map.querySourceFeatures('communes-source', { sourceLayer: 'communes' });
+        const datalist = document.getElementById('communes-list');
+        
+        // On extrait les noms uniques
+const noms = [...new Set(features
+    .map(f => f.properties.libelle)
+    .filter(nom => nom && nom !== "undefined" && nom.trim() !== "") // <-- FILTRE ICI
+)].sort();
+        
+/* APRÈS */
+const communeMap = {};
+features.forEach(f => {
+    const nom = f.properties.libelle;
+    const dep = f.properties.dep;
+    if (nom && nom !== "undefined" && nom.trim() !== "") {
+        communeMap[nom] = dep;
+    }
+});
+Object.keys(communeMap).sort().forEach(nom => {
+    let option = document.createElement('option');
+    option.value = `${nom} (${communeMap[nom]})`;
+    datalist.appendChild(option);
+});
+    }
+});
+
+// --- RECHERCHE : action au clic sur une commune de la liste ---
+
+const triggerPopup = (commune) => {
+    isLocked = true; 
+    const props = commune.properties;
+    const coords = commune.geometry.coordinates[0];
+    const lngLat = coords.reduce(
+        (acc, c) => [acc[0] + c[0] / coords.length, acc[1] + c[1] / coords.length],
+        [0, 0]
+    );
+    map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], props.codgeo]);
+    
+    const formatNum = (val) => (val != null) ? val.toString().replace('.', ',') : "N/A";
+    const formatDate = (d) => (d && d.length === 10) ? d.split('-').reverse().join('/') : "N/A";
+    /* APRÈS */
+const hasData2526 = props.val_max2526 != null && props.val_max2526 !== "" && props.val_max2526 !== "NA" && props.val_max2526 !== "null";
+const html = `
+    <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
+        <strong>${props.libelle} (${props.dep})</strong><br>
+        • Maximum historique : <strong>${formatNum(props.val_max)} μg/L</strong> le ${formatDate(props.date_max)}
+        <br>
+        ${hasData2526
+            ? `• Maximum depuis 2025 : <strong>${formatNum(props.val_max2526)} μg/L</strong> le ${formatDate(props.date_max2526)}`
+            : `• <em>Aucune donnée depuis 2025</em>`
+        }
+    </div>
+`;
+    document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
+    map.flyTo({ center: lngLat, zoom: 10, speed: 1.5 });
+    const popup = new maplibregl.Popup({ closeButton: true })
+        .setLngLat(lngLat)
+        .setHTML(html)
+        .addTo(map);
+
+popup.on('close', () => {
+    isLocked = false;
+    map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
+    // Forcer un re-enable des radios au cas où
+    document.querySelectorAll('input[name="dataMode"]').forEach(r => r.disabled = false);
+});
+};
+
+map.on('click', () => {
+    isLocked = false;
+    map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
+});
+
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+    const nomRecherche = e.target.value.replace(/\s*\(.*?\)\s*$/, '').trim();
+    if (e.target.value.length < 3) return;
+
+    document.querySelectorAll('.maplibregl-popup').forEach(el => el.remove());
+    map.flyTo({ center: [2.2137, 46.2276], zoom: isMobile ? 3.8 : 4.7  });
+    map.once('moveend', () => {
+        const features = map.querySourceFeatures('communes-source', { sourceLayer: 'communes' });
+        const commune = features.find(f => f.properties.libelle === nomRecherche);
+        if (commune) triggerPopup(commune);
+    });
+});
     
 </script>
 
