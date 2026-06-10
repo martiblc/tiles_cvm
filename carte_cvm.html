@@ -215,6 +215,12 @@
         display: flex;
         justify-content: center;
     }
+    .map-container-wrapper {
+        min-height: 400px; /* Moins haut sur mobile pour garder la carte visible */
+        width: 100%;
+        margin: 0;
+
+}
 }
     </style>
 </head>
@@ -245,7 +251,7 @@
         <div class="legend-bin"><div class="bin-color" style="background: #a30066;"></div><span class="bin-label">>6</span></div>
         <div class="legend-bin"><div class="bin-color" style="background: #730075;"></div><span class="bin-label">>7</span></div>
         <div class="legend-bin"><div class="bin-color" style="background: #3f006f;"></div><span class="bin-label">>8</span></div>
-        <div class="legend-bin"><div class="bin-color" style="background: #e0e0e0;"></div><span class="bin-label">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Sans données</span></div>
+        <div class="legend-bin"><div class="bin-color" style="background: #e0e0e0;"></div><span class="bin-label">n.c.</span></div>
     </div>
 </div>
 
@@ -292,11 +298,13 @@ const isMobile = window.innerWidth <= 480;
 const map = new maplibregl.Map({
     container: 'map',
     style: { "version": 8, "sources": {}, "layers": [] },
-    center: [2.2137, 46.2276],
-    zoom: isMobile ? 3.8 : 4.0,
-    minZoom: isMobile ? 3.8 : 5,
+    // On centre un peu plus à l'Ouest (1.8 au lieu de 2.2) pour compenser le décalage visuel
+    center: isMobile ? [2.2137, 46.5] : [1.8, 46.5],
+    zoom: isMobile ? 3.8 : 4.8, // 3.8 pour mobile, 4.8 pour desktop
+    minZoom: isMobile ? 3.8 : 4.5,
     maxZoom: 10,
-    maxBounds: [[-30.0, 25.0], [30.0, 65.0]],
+    // On restreint les bornes pour éviter que la carte ne s'échappe
+    maxBounds: [[-8.0, 40.0], [12.0, 52.0]]
 });
 
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
