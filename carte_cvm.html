@@ -106,6 +106,11 @@
         width: 100%;
     }
 
+    .maplibregl-canvas-container, 
+#map {
+    background-color: #ffffff !important;
+}
+
     /* Barre de recherche (Tom Select) */
     .search-overlay {
         position: absolute;
@@ -122,6 +127,11 @@
         border-radius: 6px !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
+
+    .maplibregl-ctrl-bottom-left .maplibregl-ctrl {
+    margin-left: 10px;
+    margin-bottom: 10px;
+}
 
     /* Toggle Overlay */
     .toggle-overlay {
@@ -170,26 +180,52 @@
     }
 
     /* Responsive */
-    @media (max-width: 480px) {
+@media (max-width: 480px) {
+        body { padding: 5px; }
         .search-overlay {
-            width: 90%;
-            left: 5%;
+            top: 2%;
+            width: 30%;
+            left: 2%;
         }
         .toggle-overlay {
-            top: auto;
-            bottom: 10px;
-            right: 50%;
-            transform: translateX(50%);
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            padding: 10px 20px;
-            min-width: 220px;
-        }
+        top: 10px;
+        bottom: auto;
+        right: 10px;
+        left: auto;
+        transform: none;
+        flex-direction: column; /* Force l'empilement vertical */
+        align-items: stretch;   /* Étire les boutons pour qu'ils aient la même largeur */
+        gap: 5px;               /* Espace entre les deux boutons */
+        padding: 8px;
+        width: fit-content;
+        min-width: 0;
+    }
+        .legend-title { margin-bottom: 2px; }
         .map-container-wrapper {
-            min-height: 400px;
+            min-height: 500px;
             margin: 0;
         }
+    .buttons-row {
+        display: flex;
+        flex-direction: column;
+    }
+    .buttons-row .radio-btn {
+        margin: 2px 0; /* Ajuste l'espacement vertical */
+    }
+
+    /* Permet au conteneur de prendre toute la largeur/hauteur en mode plein écran */
+#map-container-parent:fullscreen {
+    background-color: #ffffff;
+    width: 100vw !important;
+    height: 100vh !important;
+    padding: 0;
+}
+
+/* S'assure que les éléments internes restent bien placés en plein écran */
+#map-container-parent:fullscreen .search-overlay,
+#map-container-parent:fullscreen .toggle-overlay {
+    z-index: 9999; /* Force le passage au-dessus de la carte */
+}
     }
 </style>
 </head>
@@ -224,7 +260,7 @@
     </div>
 </div>
 
-<div class="map-container-wrapper">
+<div class="map-container-wrapper" id="map-container-parent">
     <div class="search-overlay">
         <input type="text" id="search-input" placeholder="Chercher une commune...">
     </div>
@@ -266,15 +302,19 @@ const map = new maplibregl.Map({
     container: 'map',
     style: { "version": 8, "sources": {}, "layers": [] },
     // On centre un peu plus à l'Ouest (1.8 au lieu de 2.2) pour compenser le décalage visuel
-    center: isMobile ? [2.2137, 46.5] : [1.8, 46.5], 
-    zoom: isMobile ? 3.8 : 4.8, // 3.8 pour mobile, 4.8 pour desktop
-    minZoom: isMobile ? 3.8 : 4.5,
+    center: isMobile ? [2.2137, 47] : [1.8, 46.5], 
+    zoom: isMobile ? 4 : 4.8, // 3.8 pour mobile, 4.8 pour desktop
+    minZoom: isMobile ? 4 : 4.5,
     maxZoom: 10,
     // On restreint les bornes pour éviter que la carte ne s'échappe
-    maxBounds: [[-8.0, 40.0], [12.0, 52.0]] 
+    maxBounds: [[-15.0, 35.0], [20.0, 58.0]]
 });
 
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+
+map.addControl(new maplibregl.FullscreenControl({
+    container: document.querySelector('#map-container-parent')
+}), 'bottom-left');
 
     map.on('load', () => {
         map.addSource('communes-source', {
@@ -449,7 +489,7 @@ map.on('sourcedata', (e) => {
         tsInstance = new TomSelect("#search-input", {
             options: options,
             maxItems: 1,
-            placeholder: "Chercher une commune...",
+            placeholder: "Recherche...",
             onChange: function(value) {
                 if (!value) return;
                 
