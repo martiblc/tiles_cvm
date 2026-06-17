@@ -433,7 +433,7 @@
         maplibregl.addProtocol("pmtiles", protocol.tile);
 
         // CHEMIN VERS FICHIER .pmtiles
-        const PMTILES_URL = "./communes_propres.pmtiles";
+        const PMTILES_URL = "https://martiblc.github.io/tiles_cvm/communes_propres.pmtiles";
 
         // APPEL CARTE : centrage et zoom min
         const isMobile = window.innerWidth <= 480;
@@ -494,7 +494,7 @@
                 'id': 'communes-layer',
                 'type': 'fill',
                 'source': 'communes-source',
-                'source-layer': 'france_com_carte',
+                'source-layer': 'communes',
                 'paint': {
                     'fill-color': [
                         'case',
@@ -530,7 +530,7 @@
                 'id': 'communes-highlight',
                 'type': 'line',
                 'source': 'communes-source',
-                'source-layer': 'france_com_carte',
+                'source-layer': 'communes',
                 'paint': {
                     'line-color': '#004352',
                     'line-width': 3
@@ -621,7 +621,7 @@
             if (e.sourceId === 'communes-source' && e.isSourceLoaded) {
                 if (tsInstance) return;
 
-                const features = map.querySourceFeatures('communes-source', { sourceLayer: 'france_com_carte' });
+                const features = map.querySourceFeatures('communes-source', { sourceLayer: 'communes' });
 
                 // Création options pour TomSelect
                 const options = features.map(f => ({
