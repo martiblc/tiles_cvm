@@ -354,12 +354,12 @@
 <div class="dom-buttons">
     <select id="dom-select" onchange="
         const destinations = {
-            'metro': {center: [1.8, 46.5], zoom: 3},
+            'metro': {center: [1.8, 46.5], zoom: 4},
             'martinique': {center: [-61.0, 14.6], zoom: 8},
             'guadeloupe': {center: [-61.5, 16.2], zoom: 8},
-            'guyane': {center: [-53.0, 3.9], zoom: 7},
-            'reunion': {center: [55.5, -21.1], zoom: 9},
-            'mayotte': {center: [45.1, -12.8], zoom: 10}
+            'guyane': {center: [-53.0, 3.9], zoom: 6},
+            'reunion': {center: [55.5, -21.1], zoom: 8},
+            'mayotte': {center: [45.1, -12.8], zoom: 9}
         };
         const dest = destinations[this.value];
         if (dest) map.jumpTo(dest);
