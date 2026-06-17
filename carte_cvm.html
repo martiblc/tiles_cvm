@@ -550,10 +550,14 @@
                 // Entités survolées avec libellé valide
                 const allFeatures = map.queryRenderedFeatures(e.point, { layers: ['communes-layer'] });
                 const validFeature = allFeatures.find(f =>
-                    f.properties.libelle &&
-                    f.properties.libelle !== "undefined" &&
-                    f.properties.libelle.trim() !== ""
-                );
+    f.properties.libelle &&
+    f.properties.libelle !== "undefined" &&
+    f.properties.libelle.trim() !== "" &&
+    f.properties.val_max != null &&
+    f.properties.val_max !== "" &&
+    f.properties.val_max !== "NA" &&
+    f.properties.val_max !== "null"
+);
 
                 if (validFeature) {
                     const props = validFeature.properties;
