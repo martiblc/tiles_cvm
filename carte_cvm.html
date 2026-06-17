@@ -190,19 +190,22 @@
         /* Boutons outre-mer */
 .dom-buttons {
     position: absolute;
-    top: calc(2% + 42px);
-    left: 2%;
+    top: calc(2% + 80px);
+    right: 2%;
     z-index: 10;
 }
+
 #dom-select {
     background: white;
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 5px 8px;
+    padding: 8px 8px;
     font-size: 13px;
     font-family: Arial, Helvetica, sans-serif;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    width: 100%;
+    box-sizing: border-box;
 }
 .dom-btn:hover {
     background: #f0f0f0;
@@ -211,12 +214,11 @@
         /* Bloc de notes */
         .map-notes {
             max-width: 800px;
-            margin: 20px auto 0 auto;
+            margin: 1px auto 0 auto;
             width: 100%;
             font-size: 12px;
             color: #666666;
             line-height: 1.5;
-            border-top: 1px solid #e0e0e0;
             padding-top: 5px;
         }
 
@@ -248,6 +250,10 @@
                 width: fit-content;
                 min-width: 0;
             }
+
+            .dom-buttons {
+    top: calc(2% + 110px);
+}
 
 .legend-wrapper {
     bottom: 50px;
@@ -427,7 +433,7 @@
         maplibregl.addProtocol("pmtiles", protocol.tile);
 
         // CHEMIN VERS FICHIER .pmtiles
-        const PMTILES_URL = "https://martiblc.github.io/tiles_cvm/communes_propres.pmtiles";
+        const PMTILES_URL = "./communes_propres.pmtiles";
 
         // APPEL CARTE : centrage et zoom min
         const isMobile = window.innerWidth <= 480;
@@ -560,7 +566,7 @@
                     // Texte final avec condition existence données 2025/2026
                     const hasData2526 = props.val_max2526 != null && props.val_max2526 !== "" && props.val_max2526 !== "NA" && props.val_max2526 !== "null";
 
-                    if (popup.isOpen() && popup.getElement().dataset.insee === props.codgeo) {
+                    if (popup.isOpen() && popup.getElement().dataset.insee === props.code_insee) {
                         popup.setLngLat(e.lngLat);
                     } else {
                         const html = `
@@ -582,7 +588,7 @@
                     if (map.getZoom() >= 8) {
                         map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], props.code_insee || '']);
                     } else {
-                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee '], '']);
+                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '']);
                     }
 
                 } else {
@@ -590,7 +596,7 @@
                     if (popup.isOpen()) {
                         map.getCanvas().style.cursor = '';
                         popup.remove();
-                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee '], '']);
+                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '']);
                     }
                 }
             });
@@ -599,7 +605,7 @@
             // Comportement quand souris hors carte : fermer popup
             map.on('mouseout', () => {
                 popup.remove();
-                map.setFilter('communes-highlight', ['==', ['get', 'code_insee '], '___aucun___']);
+                map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], '___aucun___']);
             });
 
         });
