@@ -53,11 +53,19 @@
         }
 
         /* Légende */
-        .legend-wrapper {
-            max-width: 800px;
-            margin: 0 auto 20px auto;
-            width: 100%;
-        }
+.legend-wrapper {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    max-width: 70%;
+    margin: 0;
+}
 
         .legend-title {
             font-size: 12px;
@@ -179,14 +187,36 @@
             display: none;
         }
 
+        /* Boutons outre-mer */
+.dom-buttons {
+    position: absolute;
+    top: calc(2% + 42px);
+    left: 2%;
+    z-index: 10;
+}
+#dom-select {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 13px;
+    font-family: Arial, Helvetica, sans-serif;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+.dom-btn:hover {
+    background: #f0f0f0;
+}
+
         /* Bloc de notes */
         .map-notes {
             max-width: 800px;
-            margin: 5px auto 0 auto;
+            margin: 20px auto 0 auto;
             width: 100%;
-            font-size: 10px;
+            font-size: 12px;
             color: #666666;
             line-height: 1.5;
+            border-top: 1px solid #e0e0e0;
             padding-top: 5px;
         }
 
@@ -218,6 +248,30 @@
                 width: fit-content;
                 min-width: 0;
             }
+
+.legend-wrapper {
+    bottom: 50px;
+    left: 2%;
+    transform: none;
+    padding: 4px 6px;
+    max-width: 70%;
+}
+
+.legend-bin {
+    width: 28px;
+}
+
+.bin-color {
+    height: 10px;
+}
+
+.bin-label {
+    font-size: 9px;
+}
+
+.legend-title {
+    font-size: 10px;
+}
 
             .legend-title {
                 margin-bottom: 2px;
@@ -258,17 +312,62 @@
 
 <body>
 
-    <div class="header-container">
+    <!-- <div class="header-container">
         <h1>CVM dans l’eau potable : les résultats dans votre commune</h1>
         <p class="subtitle">
-            Les communes apparaissent en couleur dès lors que la présence de CVM a été
-            mesurée sur leur(s) réseau(x) de distribution d'eau potable.
-            <br>Le seuil réglementaire est de 0,5 microgramme par litre (μg/L). Les communes apparaissent en jaune pâle quand 
-            la mesure est inférieure, et en vert quand ce taux est égal à zéro. Le reste des couleurs indique un dépassement.
-
+            Les communes apparaissent en couleur dès lors qu'une mesure de chlorure de vinyle monomère (CVM) a été
+            réalisée sur leur(s) réseau(x) de distribution d'eau potable.
+            Elles apparaissent en jaune clair quand le résultat maximum se trouve en dessous du seuil réglementaire de
+            0,5 microgramme par litre (μg/L), et en vert, quand ce taux est égal à zéro. Le reste affiche une mesure
+            au-dessus de la limite.
+            <br> Les mesures sont réalisées à l'échelle du réseau de distribution et peuvent ne concerner qu'une partie
+            de la commune.
         </p>
         <hr>
-    </div>
+    </div> -->
+
+
+
+    <div class="map-container-wrapper" id="map-container-parent">
+        <div class="search-overlay">
+            <input type="text" id="search-input" placeholder="Chercher une commune...">
+        </div>
+
+        <div class="toggle-overlay">
+            <div class="legend-title">Mesure maximum</div>
+            <div class="buttons-row">
+                <label class="radio-btn active">
+                    <input type="radio" name="dataMode" value="val_max2526" checked> Depuis 2025
+                </label>
+                <label class="radio-btn">
+                    <input type="radio" name="dataMode" value="val_max"> Historique
+                </label>
+            </div>
+        </div>
+
+<div class="dom-buttons">
+    <select id="dom-select" onchange="
+        const destinations = {
+            'metro': {center: [1.8, 46.5], zoom: 3},
+            'martinique': {center: [-61.0, 14.6], zoom: 8},
+            'guadeloupe': {center: [-61.5, 16.2], zoom: 8},
+            'guyane': {center: [-53.0, 3.9], zoom: 7},
+            'reunion': {center: [55.5, -21.1], zoom: 9},
+            'mayotte': {center: [45.1, -12.8], zoom: 10}
+        };
+        const dest = destinations[this.value];
+        if (dest) map.jumpTo(dest);
+        this.value = '';
+    ">
+        <option value="">Aller vers...</option>
+        <option value="martinique">Martinique</option>
+        <option value="guadeloupe">Guadeloupe</option>
+        <option value="guyane">Guyane</option>
+        <option value="reunion">La Réunion</option>
+        <option value="mayotte">Mayotte</option>
+        <option value="metro">France métro.</option>
+    </select>
+</div>
 
     <div class="legend-wrapper">
         <div class="legend-title">Teneur en CVM, en microgramme/L</div>
@@ -315,30 +414,12 @@
         </div>
     </div>
 
-    <div class="map-container-wrapper" id="map-container-parent">
-        <div class="search-overlay">
-            <input type="text" id="search-input" placeholder="Chercher une commune...">
-        </div>
-
-        <div class="toggle-overlay">
-            <div class="legend-title">Mesure maximum</div>
-            <div class="buttons-row">
-                <label class="radio-btn active">
-                    <input type="radio" name="dataMode" value="val_max2526" checked> Depuis 2025
-                </label>
-                <label class="radio-btn">
-                    <input type="radio" name="dataMode" value="val_max"> Historique
-                </label>
-            </div>
-        </div>
-
         <div id="map"></div>
     </div>
 
-    <div class="map-notes">
+  <div class="map-notes">
         <p>Réalisation : Marti Blancho. Sources : Ministère des Solidarités et de la Santé, ARS, Gaspard Lemaire
         </p>
-    </div>
 
     <script>
         let isLocked = false;
@@ -352,14 +433,15 @@
         const isMobile = window.innerWidth <= 480;
         const map = new maplibregl.Map({
             container: 'map',
-            style: { "version": 8, "sources": {}, "layers": [] },
+            // style: { "version": 8, "sources": {}, "layers": [] },
+            style: 'https://basemaps.cartocdn.com/gl/voyager-nolabels-gl-style/style.json',
             // On centre un peu plus à l'Ouest (1.8 au lieu de 2.2) pour compenser le décalage visuel
             center: isMobile ? [2.2137, 47] : [1.8, 46.5],
             zoom: isMobile ? 4 : 4.8, // 3.8 pour mobile, 4.8 pour desktop
             minZoom: isMobile ? 4 : 4.5,
             maxZoom: 10,
             // On restreint les bornes pour éviter que la carte ne s'échappe
-            maxBounds: [[-15.0, 35.0], [20.0, 58.0]]
+            // maxBounds: [[-15.0, 35.0], [20.0, 58.0]]
         });
 
         // Contrôles : boutons zoom
@@ -406,7 +488,7 @@
                 'id': 'communes-layer',
                 'type': 'fill',
                 'source': 'communes-source',
-                'source-layer': 'communes',
+                'source-layer': 'france_com_carte',
                 'paint': {
                     'fill-color': [
                         'case',
@@ -430,7 +512,7 @@
                             8.0, '#3f006f'
                         ]
                     ],
-                    'fill-opacity': 0.85,
+                    'fill-opacity': 0.9,
                     'fill-outline-color': 'rgba(0,0,0,0.05)'
                 }
 
@@ -442,7 +524,7 @@
                 'id': 'communes-highlight',
                 'type': 'line',
                 'source': 'communes-source',
-                'source-layer': 'communes',
+                'source-layer': 'france_com_carte',
                 'paint': {
                     'line-color': '#004352',
                     'line-width': 3
@@ -483,7 +565,7 @@
                     } else {
                         const html = `
                 <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
-                    <strong>${props.libelle} (${props.dep})</strong><br>
+                    <strong>${props.libelle} (${props.dept_code})</strong><br>
                     • Maximum historique : <strong>${formatNum(props.val_max)} μg/L</strong> le ${formatDate(props.date_max)}  
                     <br>
                     ${hasData2526
@@ -493,14 +575,14 @@
                 </div>
             `;
                         popup.setLngLat(e.lngLat).setHTML(html).addTo(map);
-                        popup.getElement().dataset.insee = props.codgeo;
+                        popup.getElement().dataset.insee = props.code_insee;
                     }
 
                     // Highlight de la commune
                     if (map.getZoom() >= 8) {
-                        map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], props.codgeo]);
+                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee'], props.code_insee || '']);
                     } else {
-                        map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
+                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee '], '']);
                     }
 
                 } else {
@@ -508,7 +590,7 @@
                     if (popup.isOpen()) {
                         map.getCanvas().style.cursor = '';
                         popup.remove();
-                        map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '']);
+                        map.setFilter('communes-highlight', ['==', ['get', 'code_insee '], '']);
                     }
                 }
             });
@@ -517,7 +599,7 @@
             // Comportement quand souris hors carte : fermer popup
             map.on('mouseout', () => {
                 popup.remove();
-                map.setFilter('communes-highlight', ['==', ['get', 'codgeo'], '___aucun___']);
+                map.setFilter('communes-highlight', ['==', ['get', 'code_insee '], '___aucun___']);
             });
 
         });
@@ -529,12 +611,12 @@
             if (e.sourceId === 'communes-source' && e.isSourceLoaded) {
                 if (tsInstance) return;
 
-                const features = map.querySourceFeatures('communes-source', { sourceLayer: 'communes' });
+                const features = map.querySourceFeatures('communes-source', { sourceLayer: 'france_com_carte' });
 
                 // Création options pour TomSelect
                 const options = features.map(f => ({
-                    value: f.properties.libelle + " (" + f.properties.dep + ")",
-                    text: f.properties.libelle + " (" + f.properties.dep + ")"
+                    value: f.properties.libelle + " (" + f.properties.dept_code + ")",
+                    text: f.properties.libelle + " (" + f.properties.dept_code + ")"
                 }));
 
                 tsInstance = new TomSelect("#search-input", {
@@ -577,7 +659,7 @@
             const hasData2526 = props.val_max2526 != null && props.val_max2526 !== "" && props.val_max2526 !== "NA" && props.val_max2526 !== "null";
             const html = `
     <div style="font-family: sans-serif; font-size: 13px; line-height: 1.5;">
-        <strong>${props.libelle} (${props.dep})</strong><br>
+        <strong>${props.libelle} (${props.dept_code})</strong><br>
         • Maximum historique : <strong>${formatNum(props.val_max)} μg/L</strong> le ${formatDate(props.date_max)}
         <br>
         ${hasData2526
